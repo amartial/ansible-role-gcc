@@ -6,6 +6,7 @@ Ansible Role: GCC
 
 Install [GNU Compiler Collection (GCC)](https://gcc.gnu.org/) on Centos 7 from sources.
 
+_Work in progress_
 ***
 
 Requirements
@@ -33,7 +34,7 @@ Available variables are listed below, along with default values (see [`defaults/
 | Variable  |  	Default  | Comments  |
 |---|---|---|
 | `gcc_version`   | [9.3.0](https://gcc.gnu.org/releases.html) | Choose gcc version to install  |
-| `gcc_install_dir`  | /opt/gcc  | Directory where to install gcc   |
+| `gcc_install_dir`  | /opt/gcc/[gcc_version]-gcc[gcc_sys_version]     | Directory where to install gcc   |
 | `gcc_configure_args`  |  \[--disable-multilib, \]  | Arguments to pass to `configure`  |
                          
 Dependencies             
