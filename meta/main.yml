@@ -1,4 +1,5 @@
 galaxy_info:
+  role_name: Gcc
   author: Laurent Korzeczek
   description: Install gcc compiler from sources
 
