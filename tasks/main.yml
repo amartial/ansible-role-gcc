@@ -11,11 +11,11 @@
     gcc_minor_version: "{{ gcc_version.split('.')[2] }}"
 
 - name: Get sys gcc path
-  shell: "which gcc"
+  command: "which gcc"
   register: _gcc_sys_path
 
 - name: Get sys gcc version
-  shell: "{{ _gcc_sys_path.stdout }} -dumpversion"
+  command: "{{ _gcc_sys_path.stdout }} -dumpversion"
   register: _gcc_sys_version
   when:
     - _gcc_sys_path.stdout is defined
@@ -27,13 +27,13 @@
     CC: "{{ _gcc_sys_path.stdout }}"
   when: _gcc_sys_version is defined
 
-- name : Set fact gcc_install_dir
+- name: Set fact gcc_install_dir
   set_fact:
     gcc_install_dir: "{{ gcc_install_dir | default( ['/opt', role_name, [gcc_version, gcc_sys_version] | join('-gcc')] | join('/') ) }}"
 
 - name: Check if build is needed
   block:
-    - name : Set path to requested gcc executable
+    - name: Set path to requested gcc executable
       set_fact:
         _requested_gcc_executable: "{{ gcc_install_dir }}/bin/gcc"
 
@@ -43,12 +43,12 @@
       register: stat_gcc
 
     - name: Get requested gcc version
-      shell: "{{ _requested_gcc_executable }} -dumpversion"
+      command: "{{ _requested_gcc_executable }} -dumpversion"
       register: _gcc_version
       when: stat_gcc.stat.exists
 
     - name: Get requested gcc configure options
-      shell: "{{ _requested_gcc_executable }} -v 2>&1 | sed -rn '/configure /p' | grep -oP '(?<=configure )[^ ].*' "
+      command: "{{ _requested_gcc_executable }} -v 2>&1 | sed -rn '/configure /p' | grep -oP '(?<=configure )[^ ].*' "
       register: _gcc_configure
       when: stat_gcc.stat.exists
 
@@ -98,7 +98,7 @@
       when: not stat_gcc_checksum.stat.exists
 
     - name: Retrieve checksum
-      shell: awk '/\sgcc-{{ gcc_version }}.tar.xz$/ {print $1}' < {{ gcc_download_path }}/sha512.sum
+      command: awk '/\sgcc-{{ gcc_version }}.tar.xz$/ {print $1}' < {{ gcc_download_path }}/sha512.sum
       register: gcc_source_checksum
 
     - name: Check that requested gcc archive exists
@@ -126,21 +126,21 @@
         chdir: "{{ gcc_source_dir.dest }}/gcc-{{ gcc_version }}"
 
     - name: Configure
-      shell: "{{ gcc_source_dir.dest }}/gcc-{{ gcc_version }}/configure  {{ gcc_configure_args | join(' ') }}"
+      command: "{{ gcc_source_dir.dest }}/gcc-{{ gcc_version }}/configure  {{ gcc_configure_args | join(' ') }}"
       args:
         chdir: "{{ gcc_build_path }}"
       environment:
           CC: "{{ CC }}"
 
     - name: Build (May take a while)
-      shell: "make -j 12"
+      command: "make -j 12"
       args:
         chdir: "{{ gcc_build_path }}"
       register: result
       failed_when: "'make: *** [all] Error' in result.stderr"
 
     - name: Install
-      shell: "make install"
+      command: "make install"
       args:
         chdir: "{{ gcc_build_path }}"
 
