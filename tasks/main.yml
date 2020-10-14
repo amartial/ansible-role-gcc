@@ -72,8 +72,8 @@
 
     - name: Set gcc paths
       set_fact:
-        gcc_build_path: "{{ build_path }}/{{ role_name }}/{{ gcc_version }}"
-        gcc_download_path: "{{ download_path }}/{{ role_name }}/{{ gcc_version }}"
+        gcc_build_path: "{{ build_dir }}/{{ role_name }}/{{ gcc_version }}"
+        gcc_download_path: "{{ download_dir }}/{{ role_name }}/{{ gcc_version }}"
 
     - name: Creates gcc directories if not exists
       file:
@@ -98,7 +98,7 @@
       when: not stat_gcc_checksum.stat.exists
 
     - name: Retrieve checksum
-      command: awk '/\sgcc-{{ gcc_version }}.tar.xz$/ {print $1}' < {{ gcc_download_path }}/sha512.sum
+      shell: awk '/\sgcc-{{ gcc_version }}.tar.xz$/ {print $1}' < {{ gcc_download_path }}/sha512.sum
       register: gcc_source_checksum
 
     - name: Check that requested gcc archive exists
