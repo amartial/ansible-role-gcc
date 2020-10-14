@@ -1,0 +1,190 @@
+---
+# tasks file for gcc
+
+- name: include assert.yml
+  include_tasks: assert.yml
+
+- name: Decompose gcc_version
+  set_fact:
+    gcc_major_version: "{{ gcc_version.split('.')[0] }}"
+    gcc_micro_version: "{{ gcc_version.split('.')[1] }}"
+    gcc_minor_version: "{{ gcc_version.split('.')[2] }}"
+
+- name: Get sys gcc path
+  shell: "which gcc"
+  register: _gcc_sys_path
+
+- name: Get sys gcc version
+  shell: "{{ _gcc_sys_path.stdout }} -dumpversion"
+  register: _gcc_sys_version
+  when:
+    - _gcc_sys_path.stdout is defined
+    - _gcc_sys_path.stdout | length > 0
+
+- name: Set the gcc_sys_version and CC variable
+  set_fact:
+    gcc_sys_version: "{{ _gcc_sys_version.stdout }}"
+    CC: "{{ _gcc_sys_path.stdout }}"
+  when: _gcc_sys_version is defined
+
+- set_fact:
+    gcc_install_dir: "{{ gcc_install_dir | default( ['/opt', role_name, [gcc_version, gcc_sys_version] | join('-gcc')] | join('/') ) }}"
+
+- name: Check if build is needed
+  block:
+
+    - set_fact:
+        _requested_gcc_executable: "{{ gcc_install_dir }}/bin/gcc"
+
+    - name: Check that requested gcc exists
+      stat:
+        path: "{{ _requested_gcc_executable }}"
+      register: stat_gcc
+
+    - name: Get requested gcc version
+      shell: "{{ _requested_gcc_executable }} -dumpversion"
+      register: _gcc_version
+      when: stat_gcc.stat.exists
+
+    - name: Get requested gcc configure options
+      shell: "{{ _requested_gcc_executable }} -v 2>&1 | sed -rn '/configure /p' | grep -oP '(?<=configure )[^ ].*' "
+      register: _gcc_configure
+      when: stat_gcc.stat.exists
+
+    - set_fact:
+        build_needed: "True"
+      when:
+        - "(_gcc_version.stdout is defined  and  (_gcc_version.stdout != gcc_version) | bool) or
+           (_gcc_configure.stdout is defined and not ((_gcc_configure.stdout.split() | sort) == (gcc_configure_args | sort)) ) or
+           ( not stat_gcc.stat.exists ) "
+        - "( gcc_sys_version != gcc_version )"
+
+
+- name: "Install GCC version {{ gcc_version }}"
+  block:
+
+    - name: Define download, checksum urls
+      set_fact:
+        gcc_source_url: "ftp://ftp.lip6.fr/pub/gcc/releases/gcc-{{ gcc_version }}/gcc-{{ gcc_version }}.tar.xz"
+        gcc_source_checksum_file: "ftp://ftp.lip6.fr/pub/gcc/releases/gcc-{{ gcc_version }}/sha512.sum"
+
+    - name: Set gcc paths
+      set_fact:
+        gcc_build_path: "{{ build_path }}/{{ role_name }}/{{ gcc_version }}"
+        gcc_download_path: "{{ download_path }}/{{ role_name }}/{{ gcc_version }}"
+
+    - name: Creates gcc directories if not exists
+      file:
+        path: "{{ _item }}"
+        state: directory
+      with_items:
+        - "{{ gcc_build_path }}"
+        - "{{ gcc_download_path }}"
+        - "{{ gcc_install_dir }}"
+      loop_control:
+        loop_var: _item
+
+    - name: Check that requested gcc checksum exists
+      stat:
+        path: "{{ gcc_download_path }}/sha512.sum"
+      register: stat_gcc_checksum
+
+    - name: Download gcc sources checksum
+      get_url:
+        url: "{{ gcc_source_checksum_file }}"
+        dest: "{{ gcc_download_path }}"
+      when: not stat_gcc_checksum.stat.exists
+
+    - name: Retrieve checksum
+      shell: awk '/\sgcc-{{ gcc_version }}.tar.xz$/ {print $1}' < {{ gcc_download_path }}/sha512.sum
+      register: gcc_source_checksum
+
+    - name: Check that requested gcc archive exists
+      stat:
+        path: "{{ gcc_download_path }}/gcc-{{ gcc_version }}.tar.xz"
+      register: stat_gcc_archive
+
+    - name: Download GCC sources
+      get_url:
+        url: "{{ gcc_source_url }}"
+        dest: "{{ gcc_download_path }}/"
+        checksum: "sha512:{{ gcc_source_checksum.stdout }}"
+      when: not stat_gcc_archive.stat.exists
+
+    - name: Unarchive file
+      unarchive:
+        src: "{{ gcc_download_path }}/gcc-{{ gcc_version }}.tar.xz"
+        dest: "{{ gcc_download_path }}"
+        remote_src: yes
+      register: gcc_source_dir
+
+    - name: Download gcc prerequisites
+      command: " ./contrib/download_prerequisites "
+      args:
+        chdir: "{{ gcc_source_dir.dest }}/gcc-{{ gcc_version }}"
+
+    - name: Configure
+      shell: "{{ gcc_source_dir.dest }}/gcc-{{ gcc_version }}/configure  {{ gcc_configure_args | join(' ') }}"
+      args:
+        chdir: "{{ gcc_build_path }}"
+      environment:
+          CC: "{{ CC }}"
+
+    - name: Build (May take a while)
+      shell: "make -j 12"
+      args:
+        chdir: "{{ gcc_build_path }}"
+      register: result
+      failed_when: "'make: *** [all] Error' in result.stderr"
+
+    - name: Install
+      shell: "make install"
+      args:
+        chdir: "{{ gcc_build_path }}"
+
+    - name: Cleaning
+      file:
+        state: absent
+        path: "{{ item }}/"
+      with_items:
+        - "{{ gcc_build_path }}"
+        - "{{ gcc_download_path }}"
+
+  when: build_needed is defined
+
+- set_fact:
+    CC: "{{ gcc_install_dir }}/bin/gcc"
+    CXX: "{{ gcc_install_dir }}/bin/g++"
+    F90: "{{ gcc_install_dir }}/bin/gfortran"
+    GCC_LD: "{{ gcc_install_dir }}/lib64"
+
+- name: Create a module for GCC
+  block:
+
+    - name: Installation of environment modules if not present
+      yum:
+        name:
+          - environment-modules.x86_64
+        state: present
+
+    - name: Define module_home variable if not previously defined
+      set_fact:
+        modules_home: "{{ modules_home | default( '/etc/modulefiles' ) }}"
+
+    - name: Define gcc_module_dir variable
+      set_fact:
+        gcc_module_dir: "{{ modules_home }}/compilers/gcc"
+
+    - name: Creates gcc directories if not exists
+      file:
+        path: "{{ gcc_module_dir }}"
+        state: directory
+
+    - name: Add modulefile for gcc
+      template:
+        src: "{{ _item  }}"
+        dest: "{{ gcc_module_dir }}/{{ _item  | regex_replace('module.j2', gcc_version ) }}"
+      loop_control:
+        loop_var: _item
+      with_items:
+        - "module.j2"

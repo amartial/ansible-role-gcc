@@ -1,0 +1,9 @@
+---
+# defaults file for gcc
+
+gcc_version: 9.3.0
+
+  gcc_configure_args:
+  - --prefix={{ gcc_install_dir }}
+  - --disable-multilib
+#  - --enable-languages=c,c++,fortran

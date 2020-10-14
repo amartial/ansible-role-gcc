@@ -1,0 +1,36 @@
+#%Module
+
+#if { [is-loaded gmp/]==0 } {
+#  module load gmp
+#}
+#
+#if { [is-loaded mpc/]==0 } {
+#  module load mpc
+#}
+#
+#if { [is-loaded mpfr/]==0 } {
+#  module load mpfr
+#}
+#
+#if { [is-loaded isl/]==0 } {
+#  module load isl
+#}
+
+set whatis "GCC"
+set software "gcc"
+set prefix {{ gcc_install_dir }}
+set version {{ gcc_version }}
+
+set ModulesVersion  {{ gcc_version }}
+#source {{ modules_home }}/compilers/gcc/.common
+
+setenv GCC_HOME $prefix
+setenv GCC_INC $prefix/include
+setenv GCC_BIN $prefix/bin
+setenv GCC_LIB $prefix/lib64
+setenv GCC_MAN $prefix/share/man
+prepend-path PATH $prefix/bin
+prepend-path LD_LIBRARY_PATH $prefix/lib64
+prepend-path MANPATH $prefix/share/man
+
+puts stderr "[module-info mode] module $software/$version"
