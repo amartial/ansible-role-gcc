@@ -1,14 +1,10 @@
 Ansible Role: GCC
 =================
 
-[![MIT licensed][badge-license]][link-license]
-[![Galaxy Role][badge-role]][link-galaxy]
-[![Downloads][badge-downloads]][link-galaxy]
-
 [//]: <> (Comment)
 [//]: <> (A brief description of the role goes here.)
 
-Install [GNU Compiler Collection (GCC)][gcc] on Centos 7 from sources.
+Install [GNU Compiler Collection (GCC)](https://gcc.gnu.org/) on Centos 7 from sources.
 
 ***
 
@@ -81,5 +77,5 @@ or a website \(HTML is not allowed\).)
 
 This role was created in 2020 by Laurent Korzeczek.
 
-[link-license]: https://gitlab.com/ansible-roles-korzeczl/gcc/LICENSE
-[link-galaxy]: https://galaxy.ansible.com/geerlingguy/homebrew/
+[link-license]: https://gitlab.com/ansible-roles-korzeczl/gcc/-/blob/master/LICENSE
+[link-galaxy]: https://galaxy.ansible.com/korzeczl/gcc
