@@ -27,13 +27,14 @@
     CC: "{{ _gcc_sys_path.stdout }}"
   when: _gcc_sys_version is defined
 
-- set_fact:
+- name : Set fact gcc_install_dir
+  set_fact:
     gcc_install_dir: "{{ gcc_install_dir | default( ['/opt', role_name, [gcc_version, gcc_sys_version] | join('-gcc')] | join('/') ) }}"
 
 - name: Check if build is needed
   block:
-
-    - set_fact:
+    - name : Set path to requested gcc executable
+      set_fact:
         _requested_gcc_executable: "{{ gcc_install_dir }}/bin/gcc"
 
     - name: Check that requested gcc exists
@@ -51,7 +52,8 @@
       register: _gcc_configure
       when: stat_gcc.stat.exists
 
-    - set_fact:
+    - name: Check if build is needed
+      set_fact:
         build_needed: "True"
       when:
         - "(_gcc_version.stdout is defined  and  (_gcc_version.stdout != gcc_version) | bool) or
@@ -152,7 +154,8 @@
 
   when: build_needed is defined
 
-- set_fact:
+- name: Set CC, CXX, F90, GCC_LD paths
+  set_fact:
     CC: "{{ gcc_install_dir }}/bin/gcc"
     CXX: "{{ gcc_install_dir }}/bin/g++"
     F90: "{{ gcc_install_dir }}/bin/gfortran"

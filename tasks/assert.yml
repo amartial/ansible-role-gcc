@@ -7,7 +7,8 @@
     download_dir: "{{ download_dir | default( '/tmp/download' ) }}"
     modules_home: "{{ modules_home | default( '/etc/modulefiles' ) }}"
 
-- debug:
+- name: Display download, build and module path
+  debug:
     msg:
     - "Downloads path: {{ download_dir }}"
     - "Build path: {{ build_dir }}"
