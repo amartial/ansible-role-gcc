@@ -48,7 +48,7 @@
       when: stat_gcc.stat.exists
 
     - name: Get requested gcc configure options
-      command: "{{ _requested_gcc_executable }} -v 2>&1 | sed -rn '/configure /p' | grep -oP '(?<=configure )[^ ].*' "
+      shell: "{{ _requested_gcc_executable }} -v 2>&1 | sed -rn '/configure /p' | grep -oP '(?<=configure )[^ ].*' "
       register: _gcc_configure
       when: stat_gcc.stat.exists
 
