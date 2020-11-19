@@ -161,33 +161,5 @@
     F90: "{{ gcc_install_dir }}/bin/gfortran"
     GCC_LD: "{{ gcc_install_dir }}/lib64"
 
-- name: Create a module for GCC
-  block:
-
-    - name: Installation of environment modules if not present
-      yum:
-        name:
-          - environment-modules.x86_64
-        state: present
-
-    - name: Define module_home variable if not previously defined
-      set_fact:
-        modules_home: "{{ modules_home | default( '/etc/modulefiles' ) }}"
-
-    - name: Define gcc_module_dir variable
-      set_fact:
-        gcc_module_dir: "{{ modules_home }}/compilers/gcc"
-
-    - name: Creates gcc directories if not exists
-      file:
-        path: "{{ gcc_module_dir }}"
-        state: directory
-
-    - name: Add modulefile for gcc
-      template:
-        src: "{{ _item  }}"
-        dest: "{{ gcc_module_dir }}/{{ _item  | regex_replace('module.j2', gcc_version ) }}"
-      loop_control:
-        loop_var: _item
-      with_items:
-        - "module.j2"
+- name: include tasks modulefile.yml
+  include_tasks: modulefile.yml
