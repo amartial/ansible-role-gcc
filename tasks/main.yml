@@ -2,12 +2,12 @@
 # tasks file for gcc
 - name: install wget
   yum: 
-    - name: wget
+    name: wget
     state: present
 
 - name: install default gcc
   yum: 
-    - name: gcc
+    name: gcc
     state: present
 
 - name: include assert.yml
