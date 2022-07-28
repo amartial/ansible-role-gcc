@@ -1,7 +1,9 @@
 ---
 # tasks file for gcc
 - name: Cleaning yum cache
-  shell: 'yum makecache -y'
+  shell: 
+    - 'yum clean all'
+    - 'yum makecache'
 
 - name: install prerequisites yum packages
   yum: 
