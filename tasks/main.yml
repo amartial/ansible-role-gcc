@@ -3,9 +3,12 @@
 - name: install prerequisites yum packages
   yum: 
     name: 
+      - nano
       - wget
-      - zlib zlib-devel
+      - zlib
+      - zlib-devel
       - bzip2-devel
+      - lz4-devel
     state: present
 
 - name: install default gcc
