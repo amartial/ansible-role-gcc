@@ -1,8 +1,10 @@
 ---
 # tasks file for gcc
-- name: install wget
+- name: install prerequisites yum packages
   yum: 
-    name: wget
+    name: 
+      - wget
+      - lbzip2
     state: present
 
 - name: install default gcc
