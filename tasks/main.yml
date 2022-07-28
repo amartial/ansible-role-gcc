@@ -15,6 +15,7 @@
       - bzip2-devel
       #- lbzip2-utils
       - lz4-devel
+      - texinfo
     state: present
 
 - name: install default gcc
