@@ -9,6 +9,7 @@
       - zlib-devel
       - bzip2-devel
       - lz4-devel
+      - lbzip2
     state: present
 
 - name: install default gcc
