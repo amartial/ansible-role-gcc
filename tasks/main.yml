@@ -13,8 +13,8 @@
       - zlib
       - zlib-devel
       - bzip2-devel
+      - lbzip2-utils
       - lz4-devel
-      - lbzip2
     state: present
 
 - name: install default gcc
