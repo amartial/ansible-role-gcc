@@ -1,7 +1,9 @@
 ---
 # defaults file for gcc
 
-gcc_version: 9.3.0
+gcc_version: 7.3.0
+
+gcc_install_dir: "/opt/gcc"
 
 gcc_configure_args:
   - --prefix={{ gcc_install_dir }}
