@@ -4,7 +4,8 @@
   yum: 
     name: 
       - wget
-      - lbzip2
+      - zlib zlib-devel
+      - bzip2-devel
     state: present
 
 - name: install default gcc
