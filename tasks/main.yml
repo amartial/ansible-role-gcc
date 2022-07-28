@@ -13,7 +13,7 @@
       - zlib
       - zlib-devel
       - bzip2-devel
-      - lbzip2-utils
+      #- lbzip2-utils
       - lz4-devel
     state: present
 
